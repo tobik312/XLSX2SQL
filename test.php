@@ -41,8 +41,7 @@ function dayConvertion($days){
     return $start;
 }
 function createSQL($table, $rows){
-    $tableName = $arr['name'];
-    $types = array();
+    
     
 }
 
@@ -69,9 +68,21 @@ if ($zip->open($filename)===TRUE) {
         $sheet = new SimpleXMLElement(file_get_contents($folder_name."/xl/worksheets/sheet$i.xml"));
         $sheet_rows = $sheet->sheetData[0];
         echo "<h5>$i ".$sheet_info['name']."</h5>";
-        var_dump($sheet_info);
+        //sql
+        $tableName = $sheet_info['name'];
+        $types = array();
+        foreach($sheet_rows->children()[1]->c as $c){
+            if(isset($c['t'])){
+                $types[] = "varchar(125)";
+            }else if(isset($c['s'])){
+                $types[] = "date";
+            }else{
+                $types[] = "double";
+            }
+        }
+        var_dump($types);
+        //
         foreach($sheet_rows->children() as $row){
-            var_dump($row);
             $r = array();
             foreach($row->c as $c){
                 if(isset($c['t'])){
@@ -82,8 +93,7 @@ if ($zip->open($filename)===TRUE) {
                     $r[] = $c->v;
                 }
             }
-            var_dump($r);
-            //echo implode(" ",$r)."</br>";
+            echo implode(" ",$r)."</br>";
         }
     }
     deleteDirectory($folder_name);

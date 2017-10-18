@@ -73,9 +73,15 @@ if ($zip->open($filename)===TRUE) {
             }else if(isset($c['s'])){
                 $types[] = "date";
             }else{
-                var_dump($c->v);
+                if(ctype_digit((string)$c->v)){
+                    $types[] = "int";
+                }else{
+                    $types[] = "float";
+                }
+                
             }
         }
+        var_dump($types);
         //
         foreach($sheet_rows->children() as $row){
             $r = array();

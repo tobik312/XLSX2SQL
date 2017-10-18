@@ -40,10 +40,6 @@ function dayConvertion($days){
     }
     return $start;
 }
-function createSQL($table, $rows){
-    
-    
-}
 
 $zip = new ZipArchive();
 $filename = "db.xlsx";
@@ -77,10 +73,9 @@ if ($zip->open($filename)===TRUE) {
             }else if(isset($c['s'])){
                 $types[] = "date";
             }else{
-                $types[] = "double";
+                var_dump($c->v);
             }
         }
-        var_dump($types);
         //
         foreach($sheet_rows->children() as $row){
             $r = array();

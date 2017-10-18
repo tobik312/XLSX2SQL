@@ -1,4 +1,6 @@
-<?php 
+<?php
+require "XLSX2SQL.php";
+
 class XLSXElement{
     
     //Elems
@@ -6,25 +8,14 @@ class XLSXElement{
     private $sharedStrings = array();
     //info - array(),data - array();
     private $sheets = array();
+    private $sheetList = array();
     //Utils
     function deleteDirectory($dir) {
-    if (!file_exists($dir)) {
-        return true;
-    }
-
-    if (!is_dir($dir)) {
-        return unlink($dir);
-    }
-
+    if(!file_exists($dir)) return true;
+    if(!is_dir($dir)) return unlink($dir);
     foreach (scandir($dir) as $item) {
-        if ($item == '.' || $item == '..') {
-            continue;
-        }
-
-        if (!deleteDirectory($dir . DIRECTORY_SEPARATOR . $item)) {
-            return false;
-        }
-
+        if($item == '.' || $item == '..') continue;
+        if(!$this->deleteDirectory($dir . DIRECTORY_SEPARATOR . $item)) return false;
     }
     return rmdir($dir);
     }
@@ -49,54 +40,67 @@ class XLSXElement{
         return $start;
     }
     //
-    function _contructor($file){
+    function __construct($filename){
+        if(mime_content_type("db.xlsx")!="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") return;
         $this->folder_name = time()."_tmp";
         mkdir($this->folder_name);
         $zip = new ZipArchive();
         if ($zip->open($filename)===TRUE) {
             $zip->extractTo("./$this->folder_name");
             //sharedStrings
-            $sharedString_xml = new SimpleXMLElement(file_get_contents("$this->folder_name/xl/sharedStrings.xml"));
+            $sharedString_xml = simplexml_load_file("$this->folder_name/xl/sharedStrings.xml");
             foreach($sharedString_xml->children() as $val){
                 $this->sharedStrings[] = (String) $val->t;
             }
             //workBook
-            $workbook = new SimpleXMLElement(file_get_contents("$this->folder_name/xl/workbook.xml"));
+            $workbook = simplexml_load_file("$this->folder_name/xl/workbook.xml");
             $sheets = $workbook->sheets[0];
-            $sheets_length = $sheets->count();
-            for($i=1;$i<=$sheets_length;$i++){
-                $sheet = new SimpleXMLElement(file_get_contents("$this->folder_namee/xl/worksheets/sheet$i.xml"));
+            for($i=1;$i<=$sheets->count();$i++){
+                $this->sheets[$i] = array();
+                $sheet = simplexml_load_file("$this->folder_name/xl/worksheets/sheet$i.xml");
+                $sheet_name = (string) $sheets->sheet[$i-1]['name'];
                 $sheet_rows = $sheet->sheetData[0];
-                $this->sheets[$i]['info'] = array("id"=>$i,"name"=>$sheets->sheet[$i-1]['name']); 
+                $this->sheetList[$sheet_name] = $i;
+                $this->sheets[$i]['info'] = array("id"=>$i,"name"=>$sheet_name); 
                 foreach($sheet_rows->children() as $row){
-                    $r = array();
                     foreach($row->c as $c){
                         if(isset($c['t'])){
-                            $r[] = $sharedStrings[(int) $c->v];
+                            $r[] = $this->sharedStrings[(int) $c->v];
                         }else if(isset($c['s'])){
-                            $r[] = implode("-",dayConvertion($c->v));
+                            $r[] = implode("-",$this->dayConvertion((int)$c->v));
                         }else{
-                            $r[] = $c->v;
+                            $r[] = (string) $c->v;
                         }
                     }
                     $this->sheets[$i]['data'][] = $r;
                 }
             }
-            //
         }
+        $this->deleteDirectory($this->folder_name);
     }
     
-    function getSheetInfo($id){
-        return $this->sheets[$id];
+    //SheetFunction
+    function getSheetList(){
+        return $this->sheetList;
     }
     
-    function _deconstructor(){
-       $this->deleteDirectory($this->folder_name); 
+    function getSheetData($key){
+        $key = is_int($key) ? $key : $this->sheetList[$key];
+        return array_key_exists($key,$this->sheets) ? $this->sheets[$key]['data'] : null;
     }
+    
+    function getSheetInfo($key){
+        $key = is_int($key) ? $key : $this->sheetList[$key];
+        return array_key_exists($key,$this->sheets) ? $this->sheets[$key]['info'] : null;
+    }
+    //SharedStrings
+    function getSharedStrings(){
+        return $this->sharedStrings;
+    }
+    //Conversion
+    /*
+        Class XLSX2SQL
+    */
     
 }
-
-$elem = new XLSXElement("db.xlsx");
-var_dump($elem->getSheetInfo(1));
-
 ?>

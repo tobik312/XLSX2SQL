@@ -41,7 +41,7 @@ class XLSXElement{
     }
     //
     function __construct($filename){
-        if(mime_content_type("db.xlsx")!="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") return;
+        if(empty(trim($filename)) || mime_content_type("db.xlsx")!="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") return;
         $this->folder_name = time()."_tmp";
         mkdir($this->folder_name);
         $zip = new ZipArchive();
@@ -93,14 +93,23 @@ class XLSXElement{
         $key = is_int($key) ? $key : $this->sheetList[$key];
         return array_key_exists($key,$this->sheets) ? $this->sheets[$key]['info'] : null;
     }
+    
     //SharedStrings
     function getSharedStrings(){
         return $this->sharedStrings;
     }
+    
+    function getSharedString($key){
+        return array_key_exists($key,$this->sharedStrings) ? $this->sharedStrings[$key] : null;
+    }
+    
     //Conversion
     /*
-        Class XLSX2SQL
+        Example
+        function test(){
+            new XLSX2SQL($this);
+        }
     */
     
-}  
+}
 ?>

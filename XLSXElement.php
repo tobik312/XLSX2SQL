@@ -61,7 +61,7 @@ class XLSXElement{
                 $sheet_name = (string) $sheets->sheet[$i-1]['name'];
                 $sheet_rows = $sheet->sheetData[0];
                 $this->sheetList[$sheet_name] = $i;
-                $this->sheets[$i]['info'] = array("id"=>$i,"name"=>$sheet_name); 
+                $this->sheets[$i]['info'] = array("id"=>$i,"name"=>$sheet_name,"rows"=>count($sheet_rows->children())); 
                 foreach($sheet_rows->children() as $row){
                     foreach($row->c as $c){
                         if(isset($c['t'])){
@@ -102,5 +102,5 @@ class XLSXElement{
         Class XLSX2SQL
     */
     
-}
+}  
 ?>

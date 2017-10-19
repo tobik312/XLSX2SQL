@@ -1,6 +1,4 @@
 <?php
-require "XLSX2SQL.php";
-
 class XLSXElement{
     
     //Elems
@@ -130,14 +128,6 @@ class XLSXElement{
     function getSharedString($key){
         return array_key_exists($key,$this->sharedStrings) ? $this->sharedStrings[$key] : null;
     }
-    
-    //Conversion
-    /*
-        Example
-        function test(){
-            new XLSX2SQL($this);
-        }
-    */
-    
+
 }
 ?>

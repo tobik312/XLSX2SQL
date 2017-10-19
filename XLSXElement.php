@@ -6,7 +6,7 @@ class XLSXElement{
     //Elems
     private $folder_name;
     private $sharedStrings = array();
-    //info - array(),data - array();
+    //info - array(),rows - array();,cols - array();
     private $sheets = array();
     private $sheetList = array();
     //Utils
@@ -41,16 +41,18 @@ class XLSXElement{
     }
     //
     function __construct($filename){
-        if(empty(trim($filename)) || mime_content_type("db.xlsx")!="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") return;
+        if(!file_exists($filename) || empty(trim($filename)) || mime_content_type($filename)!="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") return;
         $this->folder_name = time()."_tmp";
         mkdir($this->folder_name);
         $zip = new ZipArchive();
         if ($zip->open($filename)===TRUE) {
             $zip->extractTo("./$this->folder_name");
             //sharedStrings
-            $sharedString_xml = simplexml_load_file("$this->folder_name/xl/sharedStrings.xml");
-            foreach($sharedString_xml->children() as $val){
-                $this->sharedStrings[] = (String) $val->t;
+            if(file_exists("$this->folder_name/xl/sharedStrings.xml")){
+                $sharedString_xml = simplexml_load_file("$this->folder_name/xl/sharedStrings.xml");
+                foreach($sharedString_xml->children() as $val){
+                    $this->sharedStrings[] = (String) $val->t;
+                }
             }
             //workBook
             $workbook = simplexml_load_file("$this->folder_name/xl/workbook.xml");
@@ -61,8 +63,10 @@ class XLSXElement{
                 $sheet_name = (string) $sheets->sheet[$i-1]['name'];
                 $sheet_rows = $sheet->sheetData[0];
                 $this->sheetList[$sheet_name] = $i;
-                $this->sheets[$i]['info'] = array("id"=>$i,"name"=>$sheet_name,"rows"=>count($sheet_rows->children())); 
+                $this->sheets[$i]['info'] = array("id"=>$i,"name"=>$sheet_name,"rows"=>count($sheet_rows->children()),"cols"=>0);
+                $row_id = 0;
                 foreach($sheet_rows->children() as $row){
+                    $r = array();
                     foreach($row->c as $c){
                         if(isset($c['t'])){
                             $r[] = $this->sharedStrings[(int) $c->v];
@@ -72,7 +76,14 @@ class XLSXElement{
                             $r[] = (string) $c->v;
                         }
                     }
-                    $this->sheets[$i]['data'][] = $r;
+
+                    if($this->sheets[$i]['info']['cols']<count($row)) $this->sheets[$i]['info']['cols'] = count($row);
+                    $this->sheets[$i]['rows'][] = $r;
+
+                    foreach($r as $col_id=>$col){
+                        $this->sheets[$i]['cols'][$col_id][$row_id] = $col;
+                    }
+                    $row_id++;
                 }
             }
         }
@@ -84,9 +95,13 @@ class XLSXElement{
         return $this->sheetList;
     }
     
-    function getSheetData($key){
+    function getSheetRows($key){
         $key = is_int($key) ? $key : $this->sheetList[$key];
-        return array_key_exists($key,$this->sheets) ? $this->sheets[$key]['data'] : null;
+        return array_key_exists($key,$this->sheets) ? $this->sheets[$key]['rows'] : null;
+    }
+
+    function getSheetRow($key,$row){
+          return $this->getSheetRows($key)[$row];
     }
     
     function getSheetInfo($key){
@@ -94,7 +109,20 @@ class XLSXElement{
         return array_key_exists($key,$this->sheets) ? $this->sheets[$key]['info'] : null;
     }
     
+    function getSheetColumns($key){
+        $key = is_int($key) ? $key : $this->sheetList[$key];
+        return array_key_exists($key,$this->sheets) ? $this->sheets[$key]['cols'] : null;
+    }
+
+    function getSheetColumn($key,$row){
+          return $this->getSheetColumns($key)[$row];
+    }
+
     //SharedStrings
+    function hasSharedStrings(){
+        return (boolean) $this->sharedStrings;
+    }
+
     function getSharedStrings(){
         return $this->sharedStrings;
     }

@@ -81,7 +81,6 @@ if ($zip->open($filename)===TRUE) {
                 
             }
         }
-        var_dump($types);
         //
         foreach($sheet_rows->children() as $row){
             $r = array();
@@ -94,7 +93,7 @@ if ($zip->open($filename)===TRUE) {
                     $r[] = $c->v;
                 }
             }
-            echo implode(" ",$r)."</br>";
+            //echo implode(" ",$r)."</br>";
         }
     }
     deleteDirectory($folder_name);

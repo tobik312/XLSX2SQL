@@ -4,20 +4,21 @@ class XLSXElement{
     //Elems
     private $folder_name;
     private $sharedStrings = array();
+    
     //info - array(),rows - array(),cols - array()
     private $sheets = array();
     private $sheetList = array();
+    
     //Utils
     function deleteDirectory($dir) {
-    if(!file_exists($dir)) return true;
-    if(!is_dir($dir)) return unlink($dir);
-    foreach (scandir($dir) as $item) {
-        if($item == '.' || $item == '..') continue;
-        if(!$this->deleteDirectory($dir . DIRECTORY_SEPARATOR . $item)) return false;
+        if(!file_exists($dir)) return true;
+        if(!is_dir($dir)) return unlink($dir);
+        foreach (scandir($dir) as $item) {
+            if($item == '.' || $item == '..') continue;
+            if(!$this->deleteDirectory($dir . DIRECTORY_SEPARATOR . $item)) return false;
+        }
+        return rmdir($dir);
     }
-    return rmdir($dir);
-    }
-    
     function dayConvertion($days){
     $start = array(1900,1,1);
         while($days!=0){
@@ -38,6 +39,7 @@ class XLSXElement{
         return $start;
     }
     //
+    
     function __construct($filename){
         if(!file_exists($filename) || empty(trim($filename)) || mime_content_type($filename)!="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") return;
         $this->folder_name = time()."_tmp";

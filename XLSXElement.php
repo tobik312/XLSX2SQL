@@ -6,7 +6,7 @@ class XLSXElement{
     //Elems
     private $folder_name;
     private $sharedStrings = array();
-    //info - array(),rows - array();,cols - array();
+    //info - array(),rows - array(),cols - array()
     private $sheets = array();
     private $sheetList = array();
     //Utils

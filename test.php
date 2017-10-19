@@ -1,5 +1,61 @@
 <?php 
 
+require('XLSXElement.php');
+
+$file = new XLSXElement("db.xlsx");
+/*
+foreach($file->getSheetRow(3,1) as $ex){
+    echo "$ex ";
+    if(is_numeric($ex)){
+        if((int) $ex==$ex){
+            echo "int<br>";
+        }else if((float) $ex==$ex){
+            echo "float<br>";
+        }
+    }else
+        echo "string<br>";
+}
+
+*/
+$types = array();
+foreach($file->getSheetColumn(3,3) as $ex){
+    if(!is_numeric($ex))
+        continue;
+    if((int) $ex==$ex){
+        $types[] = "int";
+    }else if((float) $ex==$ex){
+        $types[] = "float";
+    }
+}
+
+if(in_array("float",$types)){
+    echo "float";
+}else{
+    echo "int";
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
 function deleteDirectory($dir) {
     if (!file_exists($dir)) {
         return true;
@@ -100,5 +156,5 @@ if ($zip->open($filename)===TRUE) {
 }else{
     echo "iz fukd";
 }
-
+*/
 ?>

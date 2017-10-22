@@ -3,6 +3,34 @@
 require('XLSXElement.php');
 
 $file = new XLSXElement("db.xlsx");
+
+$headers = $file->getSheetRow(3,0);
+
+foreach($headers as $num=>$col){
+    $data = $file->getSheetColumn(3,$num);
+    $typeOf = null;
+    $types = array();
+    foreach($data as $elNum=>$elVal){
+        if($elNum==0)
+            continue;
+        if(is_numeric($elVal)){
+            if((int) $elVal == $elVal){
+                $types[] = "int";
+            }else if((float) $elVal == $elVal){
+                $types[] = "float";
+            }
+        }else{
+            $typeOf = "string";
+            break;
+        }
+    }
+    if(in_array("float",$types)){
+        $typeOf = "float";
+    }else{
+        $typeOf = "int";
+    }
+}
+
 /*
 foreach($file->getSheetRow(3,1) as $ex){
     echo "$ex ";
@@ -16,7 +44,7 @@ foreach($file->getSheetRow(3,1) as $ex){
         echo "string<br>";
 }
 
-*/
+
 $types = array();
 foreach($file->getSheetColumn(3,3) as $ex){
     if(!is_numeric($ex))
@@ -27,7 +55,6 @@ foreach($file->getSheetColumn(3,3) as $ex){
         $types[] = "float";
     }
 }
-
 if(in_array("float",$types)){
     echo "float";
 }else{

@@ -96,27 +96,33 @@ class XLSXElement{
         return $this->sheetList;
     }
     
+    function isSheetExist($key){
+       return is_int($key) ? $key : (array_key_exists($key,$this->sheetList) ? $this->sheetList[$key] : null);
+    }
+
     function getSheetRows($key){
-        $key = is_int($key) ? $key : $this->sheetList[$key];
-        return array_key_exists($key,$this->sheets) ? $this->sheets[$key]['rows'] : null;
+        $key = $this->isSheetExist($key);
+        return $key ? (array_key_exists($key,$this->sheets) ? $this->sheets[$key]['rows'] : null) : null;
     }
 
     function getSheetRow($key,$row){
-          return $this->getSheetRows($key)[$row];
+        $tmpRows = $this->getSheetRows($key);
+        return $tmpRows ? (array_key_exists($row,$tmpRows) ? $tmpRows[$row] : null) : null;
     }
     
     function getSheetInfo($key){
-        $key = is_int($key) ? $key : $this->sheetList[$key];
-        return array_key_exists($key,$this->sheets) ? $this->sheets[$key]['info'] : null;
+        $key = $this->isSheetExist($key);
+        return $key ? (array_key_exists($key,$this->sheets) ? $this->sheets[$key]['info'] : null) : null;
     }
     
     function getSheetColumns($key){
-        $key = is_int($key) ? $key : $this->sheetList[$key];
-        return array_key_exists($key,$this->sheets) ? $this->sheets[$key]['cols'] : null;
+        $key = $this->isSheetExist($key);
+        return $key ? (array_key_exists($key,$this->sheets) ? $this->sheets[$key]['cols'] : null) : null;
     }
 
-    function getSheetColumn($key,$row){
-          return $this->getSheetColumns($key)[$row];
+    function getSheetColumn($key,$col){
+        $tmpCols = $this->getSheetColumns($key);
+        return $tmpCols ? (array_key_exists($col,$tmpCols) ? $tmpCols[$col] : null): null;
     }
 
     //SharedStrings

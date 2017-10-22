@@ -4,43 +4,63 @@ class XLSX2JSON{
     private $elem;
     private $headers = array();
     private $cols = array();
-    private $jsonArray;
+    private $sheetsList = array();
+    private $jsonArray = array();
+    private $defaultHeader = true;
+
+    function compile(){
+        $this->jsonArray = array();
+        foreach($this->sheetsList as $sheetName=>$id){
+            $this->cols[$id] = $this->elem->getSheetColumns($id);
+            if(!$this->cols[$id]) $this->cols[$id] = array();
+            if($this->defaultHeader){
+                $this->headers[$id] = $this->elem->getSheetRow($id,0);
+            }else{
+
+            }
+            foreach($this->cols[$id] as $i=>$col){
+                $tmpArray = $col;
+                if($this->defaultHeader) array_shift($tmpArray);
+                $this->jsonArray[$sheetName][$this->headers[$id][$i]] = $tmpArray;
+            }
+        }
+    }
 
     function __construct($elem){
         if(get_class($elem)!="XLSXElement") return;
         $this->elem = $elem;
-        foreach($this->elem->getSheetList() as $id){
-            $this->cols[$id][] = $this->elem->getSheetColumns($id);
-            $this->header[$id] = $this->elem->getSheetRow($id,0);
-        }
-        $this->compile();
-    }
-
-    private function compile(){
-        $tmp = array();
-        foreach($this->header as $sheetKey=>)
+        $this->sheetsList = $this->elem->getSheetList();
     }
 
     //key,key,key
-    function setSheet(...$keys){
-        $this->cols = array();
+    function setSheets(...$keys){
+        $this->sheetsList = array();
+        $tmpList = $this->elem->getSheetList();
         foreach($keys as $key){
-            $this->cols[] = $this->elem->getSheetColumns($key);
+            if(is_int($key)){
+                $value = $key;
+                $key = array_search($key,$tmpList);
+            }else{
+                $value = array_key_exists($key,$tmpList) ? $tmpList[$key] : null;
+            }
+            $this->sheetsList[$key] = $value;
         }
-        $this->compile();
     }
 
     //array(sheetKey=>array(headers))
+    //string - num - auto 1,2,3...
     function setHeaders($headers){
-        $this->header = array();
-        foreach($headers as $key=>$headers){
-            $this->header[$key] = $headers;
+        $this->defaultHeader = false;
+        if($headers=='num'){
+
         }
-        $this->compile();
+        $this->header = $headers;
+
     }
 
     function getJSONString(){
-
+        $this->compile();
+        return json_encode($this->jsonArray);
     }
 
 }

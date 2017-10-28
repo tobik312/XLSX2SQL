@@ -4,9 +4,12 @@ require('XLSXElement.php');
 
 $file = new XLSXElement("db.xlsx");
 
-$types[] = array();
 
-foreach($file->getSheetList() as $sheetName=>$sheetNum){
+$sheetList = $file->getSheetList();
+
+$types = array();
+
+foreach($sheetList as $sheetName=>$sheetNum){
     $types[$sheetName] = array();
     foreach($file->getSheetColumns($sheetNum) as $colKey=>$col){
         foreach($col as $colKey=>$colData){
@@ -24,16 +27,26 @@ foreach($file->getSheetList() as $sheetName=>$sheetNum){
             }
         }
         $types[$sheetName][] = $type;
-        
     }
 }
 
-foreach($types as $key=>$element){
-    if(empty($element)){
-        array_shift($types);
+$headers = array();
+
+foreach($sheetList as $sheetName=>$sheetNum){
+    $headers[$sheetName] = array();
+    $firstRow = $file->getSheetRow($sheetNum,0);
+    $rowTypes = $types[$sheetName];
+    foreach($firstRow as $rowNum=>$rowName){
+        $headers[$sheetName][$rowName] = $rowTypes[$rowNum];
     }
 }
 
-var_dump($types);
+
+var_dump($headers);
+
+
+
+
+
 
 ?>

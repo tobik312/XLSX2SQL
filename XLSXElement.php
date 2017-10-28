@@ -4,6 +4,7 @@ class XLSXElement{
     //Elems
     private $folder_name;
     private $sharedStrings = array();
+    private $filename = null;
     
     //info - array(),rows - array(),cols - array()
     private $sheets = array();
@@ -43,6 +44,7 @@ class XLSXElement{
     
     function __construct($filename){
         if(!file_exists($filename) || empty(trim($filename)) || mime_content_type($filename)!="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") return;
+        $this->filename = $filename;
         $this->folder_name = time()."_tmp";
         mkdir($this->folder_name);
         $zip = new ZipArchive();
@@ -136,6 +138,10 @@ class XLSXElement{
     
     function getSharedString($key){
         return array_key_exists($key,$this->sharedStrings) ? $this->sharedStrings[$key] : null;
+    }
+    //
+    function getFileName(){
+        return $this->filename;
     }
 
 }

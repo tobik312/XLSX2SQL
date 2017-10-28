@@ -4,7 +4,10 @@ require('XLSXElement.php');
 
 $file = new XLSXElement("db.xlsx");
 
-foreach($file->getSheetList() as $sheetNum){
+$types[] = array();
+
+foreach($file->getSheetList() as $sheetName=>$sheetNum){
+    $types[$sheetName] = array();
     foreach($file->getSheetColumns($sheetNum) as $colKey=>$col){
         foreach($col as $colKey=>$colData){
             $numericTypes = array();
@@ -12,30 +15,25 @@ foreach($file->getSheetList() as $sheetNum){
             if($colKey==0)
                 continue;
             if(is_numeric($colData)){
-                if((int) $colData == $colData){
-                    $numericTypes[] = "int";
-                }else if((float) $colData == $colData){
-                    $numericTypes[] = "float";
-                }
-
-                if(in_array("float",$numericTypes)){
-                    $type = "float";
-                }else{
-                    $type = "int";
-                }
+                $numericTypes[] = (int) $colData == $colData ? "int" : "float";
+                $type = in_array("float",$numericTypes) ? "float" : "int";
             }else{
                 $date = strtotime($colData);
                 $colDate = date("Y-m-d",$date);
-                if($colDate == $colData)
-                    $type = "date";
-                else
-                    $type = "string";
+                $type = $colDate == $colData ? "date" : "string";
             }
         }
-        echo "$type<br><br>";
+        $types[$sheetName][] = $type;
+        
     }
-    echo "<br><br><br><br>";
 }
 
+foreach($types as $key=>$element){
+    if(empty($element)){
+        array_shift($types);
+    }
+}
+
+var_dump($types);
 
 ?>

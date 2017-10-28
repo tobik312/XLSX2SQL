@@ -7,6 +7,8 @@ $file = new XLSXElement("db.xlsx");
 
 $sheetList = $file->getSheetList();
 
+
+//getTypes
 $types = array();
 
 foreach($sheetList as $sheetName=>$sheetNum){
@@ -19,17 +21,19 @@ foreach($sheetList as $sheetName=>$sheetNum){
                 continue;
             if(is_numeric($colData)){
                 $numericTypes[] = (int) $colData == $colData ? "int" : "float";
-                $type = in_array("float",$numericTypes) ? "float" : "int";
+                $type = in_array("float",$numericTypes) ? "float" : "int(11)";
             }else{
                 $date = strtotime($colData);
                 $colDate = date("Y-m-d",$date);
-                $type = $colDate == $colData ? "date" : "string";
+                $type = $colDate == $colData ? "date" : "varchar(100)";
             }
         }
         $types[$sheetName][] = $type;
     }
 }
 
+
+//getHeaders
 $headers = array();
 
 foreach($sheetList as $sheetName=>$sheetNum){
@@ -41,12 +45,20 @@ foreach($sheetList as $sheetName=>$sheetNum){
     }
 }
 
+//getSQL
+$sqlCode = "";
 
-var_dump($headers);
+foreach($headers as $tabName=>$header){
+    $sqlCode.="CREATE TABLE $tabName (\n\r";
+    foreach($header as $colName=>$colType){
+        $sqlCode.="$colName $colType NOT NULL,\n\r";
+    }
+    reset($header);
+    $first_key = key($header);
+    $sqlCode.="PRIMARY KEY ($first_key)\n\r";
+    $sqlCode.=") ENGINE=InnoDB DEFAULT CHARSET=utf8\n\r\n\r";
+}
 
-
-
-
-
+echo $sqlCode;
 
 ?>

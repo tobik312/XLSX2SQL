@@ -38,6 +38,7 @@ $headers = array();
 
 foreach($sheetList as $sheetName=>$sheetNum){
     $headers[$sheetName] = array();
+    $sheetInfo[$sheetName] = $file->getSheetInfo($sheetNum);
     $firstRow = $file->getSheetRow($sheetNum,0);
     $rowTypes = $types[$sheetName];
     foreach($firstRow as $rowNum=>$rowName){
@@ -47,16 +48,25 @@ foreach($sheetList as $sheetName=>$sheetNum){
 
 //getSQL
 $sqlCode = "";
-
 foreach($headers as $tabName=>$header){
-    $sqlCode.="CREATE TABLE $tabName (\n\r";
+    $sqlCode .= "DROP TABLE IF EXISTS $tabName;\n\rCREATE TABLE $tabName (\n\r";
     foreach($header as $colName=>$colType){
-        $sqlCode.="$colName $colType NOT NULL,\n\r";
+        $sqlCode .= "$colName $colType NOT NULL,\n\r";
     }
-    reset($header);
-    $first_key = key($header);
-    $sqlCode.="PRIMARY KEY ($first_key)\n\r";
-    $sqlCode.=") ENGINE=InnoDB DEFAULT CHARSET=utf8\n\r\n\r";
+    ///???????????????????/// \|/ ///???????????????????///
+    $sqlCode .= "PRIMARY KEY (???)\n\r";
+    $sqlCode .= ") ENGINE=InnoDB DEFAULT CHARSET=utf8\n\r\n\r";
+    $sqlCode .= "INSERT INTO $tabName VALUES\n\r";
+    for($i = 1; $i < $sheetInfo[$tabName]['rows']; $i++){
+        $tmp = $file->getSheetRow($sheetInfo[$tabName]['id'],$i);
+        $sqlCode .= "(";
+        for($j = 0; $j < count($tmp); $j++){
+            $sqlCode .= "$tmp[$j]";
+            $sqlCode .= $j == count($tmp) - 1? "" : ",";
+        }
+        $sqlCode .= $i+1 == $sheetInfo[$tabName]['rows'] ? ");\n\r" : "),\n\r";
+    }
+    $sqlCode .= "\n\r";
 }
 
 echo $sqlCode;

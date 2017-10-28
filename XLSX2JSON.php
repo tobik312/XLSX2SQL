@@ -8,6 +8,8 @@ class XLSX2JSON{
     private $jsonArray = array();
     private $defaultHeader = true;
 
+    const ARRAY = "arrayType";
+
     function compile(){
         $this->jsonArray = array();
         foreach($this->sheetsList as $sheetName=>$id){
@@ -16,12 +18,20 @@ class XLSX2JSON{
             if($this->defaultHeader){
                 $this->headers[$id] = $this->elem->getSheetRow($id,0);
             }else{
+                if($this->headers!=self::ARRAY){
+                    $this->headers[$sheetName] = array_key_exists($sheetName,$this->headers) ? $this->headers[$sheetName] : "empty";
 
+                }
             }
             foreach($this->cols[$id] as $i=>$col){
                 $tmpArray = $col;
-                if($this->defaultHeader) array_shift($tmpArray);
-                $this->jsonArray[$sheetName][$this->headers[$id][$i]] = $tmpArray;
+                if($this->defaultHeader){
+                    array_shift($tmpArray);
+                }else{
+                    $this->headers[$id][$i] = $i;
+                }
+                $tmpHeader = ($this->headers==self::ARRAY) ? $i : $this->headers[$id][$i];
+                $this->jsonArray[$sheetName][$tmpHeader] = $tmpArray;
             }
         }
     }
@@ -48,14 +58,10 @@ class XLSX2JSON{
     }
 
     //array(sheetKey=>array(headers))
-    //string - num - auto 1,2,3...
+    //string - ARRAY - auto 1,2,3...
     function setHeaders($headers){
         $this->defaultHeader = false;
-        if($headers=='num'){
-
-        }
-        $this->header = $headers;
-
+        $this->headers = $headers;
     }
 
     function getJSONString(){
